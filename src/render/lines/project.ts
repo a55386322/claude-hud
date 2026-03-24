@@ -13,8 +13,19 @@ export function renderProjectLine(ctx: RenderContext): string | null {
     const providerLabel = getProviderLabel(ctx.stdin);
     const showUsage = display?.showUsage !== false;
     const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
+    const ctxSize = ctx.stdin.context_window?.context_window_size ?? 0;
+    const displayNameRaw = ctx.stdin.model?.display_name ?? '';
+    let modeLabel = '';
+    if (displayNameRaw.includes('1M') || ctxSize >= 900000) {
+      modeLabel = 'max';
+    } else if (ctxSize > 0) {
+      modeLabel = 'high';
+    }
     const modelQualifier = providerLabel ?? (showUsage && hasApiKey ? red('API') : undefined);
-    const modelDisplay = modelQualifier ? `${model} | ${modelQualifier}` : model;
+    let modelDisplay = modelQualifier ? `${model} | ${modelQualifier}` : model;
+    if (modeLabel) {
+      modelDisplay = `${modelDisplay} | ${modeLabel}`;
+    }
     parts.push(modelColor(`[${modelDisplay}]`, colors));
   }
 
